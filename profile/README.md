@@ -1,9 +1,18 @@
-## Kadupul
+<p align="center">
+  <img src="https://raw.githubusercontent.com/kadupulhq/.github/main/profile/assets/kadupul-icon.png" alt="Kadupul flower with a gold metric trace" width="160">
+</p>
 
-Network monitoring and graphing. A fork of [Cacti](https://github.com/Cacti/cacti).
+<h1 align="center">kadupul</h1>
 
-Nothing here works yet. The repositories hold the name and the plan. There is no
-code, no build, and no install path.
+<p align="center"><strong>Network monitoring and time-series graphing.</strong></p>
+
+Kadupul is an independent open-source monitoring project. Collect metrics from
+network devices and servers, keep their history, and graph what happened.
+
+Development, contributions, and release decisions belong here in the Kadupul
+organization.
+
+**In development.** A supported release is not yet available.
 
 | Repository | What it is |
 |---|---|
@@ -12,5 +21,5 @@ code, no build, and no install path.
 
 Report a vulnerability privately through
 [Security Advisories](https://github.com/kadupulhq/kadupul/security/advisories/new),
-and read [the policy](https://github.com/kadupulhq/kadupul/blob/main/SECURITY.md)
-first if it also affects stock Cacti.
+and read [the security policy](https://github.com/kadupulhq/.github/blob/main/.github/SECURITY.md)
+before submitting a report.
