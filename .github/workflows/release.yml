@@ -2,7 +2,7 @@
 #
 # A repository opts in with a three-line caller that triggers on a version tag.
 # The tag is the release: this workflow refuses to publish one that is not
-# semver, or one the changelog does not describe.
+# semver. Repositories can use a checked-in changelog or generated GitHub notes.
 name: Release
 
 on:
@@ -12,6 +12,10 @@ on:
         description: Path to the changelog to read release notes from.
         type: string
         default: CHANGELOG.md
+      generate-notes:
+        description: Generate release notes from merged pull requests and .github/release.yml.
+        type: boolean
+        default: false
       draft:
         description: Publish as a draft for a human to review before it goes out.
         type: boolean
@@ -64,8 +68,9 @@ jobs:
           echo "prerelease=$prerelease" >> "$GITHUB_OUTPUT"
           echo "Releasing $version (prerelease=$prerelease)"
 
-      - name: Extract release notes
+      - name: Extract release notes from changelog
         id: notes
+        if: ${{ !inputs.generate-notes }}
         env:
           CHANGELOG: ${{ inputs.changelog }}
           VERSION: ${{ steps.version.outputs.version }}
@@ -98,9 +103,15 @@ jobs:
           NOTES: ${{ steps.notes.outputs.body }}
           PRERELEASE: ${{ steps.version.outputs.prerelease }}
           DRAFT: ${{ inputs.draft }}
+          GENERATE_NOTES: ${{ inputs.generate-notes }}
         run: |
           set -euo pipefail
-          args=(--title "$TAG" --notes "$NOTES")
+          args=(--title "$TAG")
+          if [ "$GENERATE_NOTES" = "true" ]; then
+            args+=(--generate-notes)
+          else
+            args+=(--notes "$NOTES")
+          fi
           [ "$PRERELEASE" = "true" ] && args+=(--prerelease)
           [ "$DRAFT" = "true" ] && args+=(--draft)
           gh release create "$TAG" "${args[@]}"
