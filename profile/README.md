@@ -18,6 +18,9 @@ organization.
 |---|---|
 | [kadupul](https://github.com/kadupulhq/kadupul) | The application |
 | [website](https://github.com/kadupulhq/website) | Documentation site |
+| [rondi](https://github.com/kadupulhq/rondi) | Rust RRD storage engine aiming for RRDtool and `rrdcached` compatibility (pre-alpha) |
+| [terraform](https://github.com/kadupulhq/terraform) | This organization as code: repositories, labels and branch rules |
+| [template](https://github.com/kadupulhq/template) | Starting point for new repositories in the organization |
 
 Report a vulnerability privately through
 [Security Advisories](https://github.com/kadupulhq/kadupul/security/advisories/new),
