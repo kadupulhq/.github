@@ -13,6 +13,14 @@ on:
       pr_number:
         type: string
         default: ""
+      review_guidance:
+        description: Repository compatibility and formatting rules
+        type: string
+        default: ""
+      checkout_pr_head:
+        description: Make dispatched PR source available for reading in pr-head
+        type: boolean
+        default: false
     secrets:
       ANTHROPIC_API_KEY:
         required: false
@@ -22,6 +30,7 @@ permissions:
 
 jobs:
   config:
+    timeout-minutes: 5
     name: Check review configuration
     # Fork and Dependabot pull requests get no secrets. Only members can start
     # a run from a comment, and only on pull requests.
@@ -67,6 +76,7 @@ jobs:
           fi
 
   review:
+    timeout-minutes: 30
     name: Automatic review
     needs: config
     if: >-
@@ -117,6 +127,15 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
+      - name: Check out pull request source for manual review
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.checkout_pr_head }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: refs/pull/${{ steps.pr.outputs.number }}/head
+          path: pr-head
+          fetch-depth: 1
+          persist-credentials: false
+
       - name: Review
         uses: anthropics/claude-code-action@fd1c128679612beff4ca259c78021c506e8aa7a7 # v1.0.237
         with:
@@ -132,12 +151,16 @@ jobs:
             - security: authorization checks, injection (SQL, shell, path),
               and output encoding
             - changed behaviour that has no test
+            ${{ inputs.review_guidance }}
+            ${{ inputs.checkout_pr_head && 'The pull request source is available in pr-head/ for reading. Do not execute its files.' || '' }}
             ${{ github.event_name == 'workflow_dispatch' && 'Inline comments are not available on this run, so post all findings as one comment with `gh pr comment`, citing file and line for each.' || 'Post each finding as an inline review comment on the line it concerns. Post one short summary comment with `gh pr comment` only if there are findings that do not fit a line.' }}
             If there is nothing to report, say so in one comment.
           claude_args: >-
             --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
+            ${{ github.event_name == 'workflow_dispatch' && inputs.checkout_pr_head && '--add-dir pr-head' || '' }}
 
   respond:
+    timeout-minutes: 30
     name: Answer @claude
     needs: config
     if: >-
