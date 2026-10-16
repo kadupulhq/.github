@@ -28,6 +28,14 @@ on:
         description: Build and publish a container image to the registry.
         type: boolean
         default: false
+      buildkit-image:
+        description: BuildKit daemon image; callers can select an authenticated, digest-pinned GHCR mirror.
+        type: string
+        default: moby/buildkit:buildx-stable-1
+      sbom-generator:
+        description: BuildKit SBOM generator image; use a digest-pinned GHCR mirror to avoid Docker Hub pulls.
+        type: string
+        default: docker/buildkit-syft-scanner:stable-1
       php-version:
         description: PHP the tarball is vendored against.
         type: string
@@ -215,13 +223,15 @@ jobs:
       - name: Require a Dockerfile
         run: test -f Dockerfile || { echo "::error::No Dockerfile at the repository root."; exit 1; }
 
-      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
-
       - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ github.token }}
+
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+        with:
+          driver-opts: image=${{ inputs.buildkit-image }}
 
       - uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         id: meta
@@ -247,7 +257,7 @@ jobs:
           # buildx writes SLSA provenance and an SPDX SBOM into the index, so a
           # pull of the image carries both without a second lookup.
           provenance: mode=max
-          sbom: true
+          sbom: generator=${{ inputs.sbom-generator }}
 
       # ghcr refuses an uppercase path and github.repository keeps the owner's
       # case. metadata-action folds it internally; the steps below cannot.
